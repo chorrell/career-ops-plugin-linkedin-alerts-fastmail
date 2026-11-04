@@ -1,0 +1,6 @@
+[
+  "phl-mx-05.messagingengine.com;    x-csa=none;    x-me-sender=none;    x-ptr=pass smtp.helo=maild-cb.linkedin.com      policy.ptr=maild-cb.linkedin.com",
+  "phl-mx-05.messagingengine.com;    bimi=pass header.d=linkedin.com header.selector=default      policy.authority=pass policy.mark-type=\"Registered Mark\"      policy.authority-uri=      https://media.licdn.com/media/AAYABAQhAAgAAQAAAAAAAYFI0DP_wvHFSv6mYduMZuEwSA.pem",
+  "phl-mx-05.messagingengine.com;    arc=none (no signatures found)",
+  "phl-mx-05.messagingengine.com;    dkim2=none (no signatures found);    dkim=pass (2048-bit rsa key sha256) header.d=linkedin.com      header.i=@linkedin.com header.b=DfKE1NcX header.a=rsa-sha256      header.s=d2048-202308-00;    dkim=pass (2048-bit rsa key sha256) header.d=maild.linkedin.com      header.i=@maild.linkedin.com header.b=BPJow+RY header.a=rsa-sha256      header.s=d2048-202308-0d;    dmarc=pass policy.dwl=pass policy.published-domain-policy=reject      policy.applied-disposition=none policy.evaluated-disposition=none      (p=reject,d=none,d.eval=none) policy.policy-from=p      header.from=linkedin.com;    iprev=pass smtp.remote-ip=108.174.6.178 (maild-cb.linkedin.com);    spf=pass      smtp.mailfrom=      m-REDACTED@bounce.linkedin.com      smtp.helo=maild-cb.linkedin.com"
+]

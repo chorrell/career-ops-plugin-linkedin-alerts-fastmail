@@ -1,62 +1,57 @@
 # AGENTS.md
 
-The GitHub template (`is_template: true`) that new `chorrell` repositories are
-created from. It contains only shared configuration, no application code. See
-[README.md](README.md) for what each file does and the checklist for new
-repositories.
+A career-ops `ingest` plugin that reads LinkedIn job-alert emails from Fastmail
+over JMAP and returns their job cards as pipeline leads. See
+[README.md](README.md) for setup and usage, and the career-ops
+[plugin docs](https://github.com/career-ops-hq/career-ops/blob/main/docs/PLUGINS.md)
+for the plugin contract.
 
 ## Structure
 
 ```text
-├── .pre-commit-config.yaml     # gitleaks, markdownlint-cli2 (Docker), hygiene hooks, zizmor
-├── .markdownlint.yaml          # MD013 (line length) disabled
-├── .gitignore                  # Language-agnostic: OS files, .env*, editor dirs, .claude/settings.local.json
-├── .gitattributes              # * text=auto
-├── AGENTS.md / CLAUDE.md       # Agent guidance; CLAUDE.md only imports AGENTS.md
-├── LICENSE                     # MPL-2.0
-└── .github/
-    ├── CODEOWNERS              # * @chorrell
-    ├── dependabot.yml          # github-actions + pre-commit in one monthly `tooling` PR, 7-day cooldown
-    ├── zizmor.yml              # chorrell/* may be tag-pinned; everything else hash-pinned
-    └── workflows/
-        ├── markdownlint.yml    # PR stub calling chorrell/workflows markdownlint.yml@v1
-        ├── pre-commit.yml      # PR stub calling chorrell/workflows pre-commit.yml@v1
-        ├── dependabot-automerge.yml # PR stub: auto-merges minor/patch `tooling` PRs
-        └── zizmor.yml          # PR + main stub calling chorrell/workflows zizmor.yml@v1
+├── manifest.json        # id, hooks, requiredEnv, allowedHosts, jobPostings, humanInTheLoop
+├── index.mjs            # ingest hook: JMAP session → Email/query + Email/get → cards → Job[]
+├── _helpers.mjs         # pure helpers: parseAlertText, parseAlertName, isAuthenticLinkedIn
+├── skill.md             # how-to the career-ops agent loads with `plugins.mjs skill`
+├── test/
+│   ├── parse.test.mjs   # offline tests against redacted real alerts
+│   ├── smoke.mjs        # entry imports and exports the manifest's hooks
+│   └── fixtures/        # alert text and Authentication-Results headers
+└── .github/workflows/
+    └── test.yml         # runs both tests on PRs and pushes to main
 ```
 
 ## Rules
 
-- **Everything here is copied into every new repository.** Keep it
-  language-agnostic. Python, Docker, Terraform and similar hooks, Dependabot
-  ecosystems and ignores belong in the repositories that need them.
-- **Keep this in sync with my other repositories.** When a shared default
-  changes (a hook, the Dependabot layout, the markdownlint stub), change it here
-  too, so new repositories don't start out of date.
-- **Reusable workflows live in [chorrell/workflows](https://github.com/chorrell/workflows).**
-  Workflows here are short stubs that own their triggers, `permissions` and
-  `concurrency` and call the shared workflow by tag (`@v1`). Third-party actions
-  are pinned by commit hash with a version comment; zizmor enforces this.
-- **zizmor is the workflow linter.** Reference actions and reusable workflows
-  in the same repository with GitHub's `$/` self-repository syntax
-  (`uses: $/.github/workflows/build.yml`), not `./`, as zizmor's
-  `self-repository` audit requires. actionlint isn't used because it rejects
-  `$/` ([rhysd/actionlint#711](https://github.com/rhysd/actionlint/issues/711)).
-- **Repository settings aren't configured here.** Merge settings, rulesets and
-  required status checks are managed by Terraform in
+- **No dependencies.** Plain ESM, Node built-ins only, no build step and no
+  `package.json`. Network calls go through `ctx.fetch`, which career-ops limits
+  to `manifest.json` → `allowedHosts`; a new Fastmail API host has to be added
+  there.
+- **Read-only, never submits.** The plugin reads the user's own mail and
+  returns leads. It never fetches linkedin.com, writes nothing outside its own
+  state file under `ctx.dataRoot`, and keeps `humanInTheLoop: true`.
+- **Keep the DMARC gate.** `isAuthenticLinkedIn` trusts only Fastmail's own
+  `Authentication-Results` clauses. Don't loosen it, and add a test for every
+  new header shape.
+- **Fixtures are redacted.** Strip `trackingId`, `midToken`, `otpToken` and
+  similar tracking parameters and the recipient's name and address before
+  adding a new alert fixture. `gitleaks` runs in pre-commit, but it won't catch
+  personal data.
+- **Pure logic goes in `_helpers.mjs`** so it can be tested offline; `index.mjs`
+  stays the JMAP glue.
+- **Bump `version` in `manifest.json` on every change to plugin files.**
+  career-ops pins the file hashes when the user trusts the plugin, and an edit
+  without a version bump is blocked as possible tampering.
+- Run `prek run --all-files` before pushing. Hooks run in Docker rather than
+  needing local tools: the `plugin-tests` hook runs both tests in
+  `node:22-alpine`, and markdownlint has its own image, so Docker has to be
+  running.
+  CI runs the tests, pre-commit and markdownlint on pull requests, and zizmor
+  on pull requests and pushes to `main`.
+- Third-party actions are pinned by commit hash with a version comment;
+  `chorrell/*` reusable workflows by tag. zizmor enforces this.
+- Repository settings and required status checks live in
   [chorrell/github-settings](https://github.com/chorrell/github-settings)
-  (`repos.yaml`). Don't change them in the GitHub UI.
-- Run `prek run --all-files` before pushing (the markdownlint hook needs
-  Docker). CI runs markdownlint on pull requests to `main`, and zizmor on
-  every pull request and push to `main`. `zizmor / zizmor` is a required check
-  on every repository, so don't remove the zizmor stub.
-- Dependabot opens one monthly `chore(deps): bump the tooling group ...` PR
-  for Actions and pre-commit hooks. `dependabot-automerge.yml` merges it once
-  checks pass if every update is minor or patch; majors wait for review. Add
-  other ecosystems (uv, Docker, Terraform) as separate entries, outside the
-  `tooling` group, so they aren't auto-merged. A repository that publishes or
-  deploys on pushes to `main` should drop the auto-merge stub, because merges
-  made with `GITHUB_TOKEN` don't trigger push workflows.
-- Commits and PR titles use conventional commits (`feat: ...`, `ci: ...`,
-  `chore(deps): ...`). Branch from `main` with a `feature/` prefix. PRs are
-  squash-merged, so keep PR bodies short and focused on intent.
+  (`repos.yaml`), not the GitHub UI.
+- Commits and PR titles use conventional commits. Branch from `main` with a
+  `feature/` prefix; PRs are squash-merged.

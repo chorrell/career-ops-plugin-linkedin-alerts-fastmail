@@ -1,59 +1,90 @@
-# template-repo
+# career-ops-plugin-linkedin-alerts-fastmail
 
-[![markdownlint](https://github.com/chorrell/template-repo/actions/workflows/markdownlint.yml/badge.svg)](https://github.com/chorrell/template-repo/actions/workflows/markdownlint.yml)
+[![test](https://github.com/chorrell/career-ops-plugin-linkedin-alerts-fastmail/actions/workflows/test.yml/badge.svg)](https://github.com/chorrell/career-ops-plugin-linkedin-alerts-fastmail/actions/workflows/test.yml)
 
-The GitHub template I start new repositories from. It holds the lint,
-Dependabot and pre-commit defaults every project shares, so a new repository
-starts with the same baseline instead of copying files by hand.
+An `ingest` plugin for [career-ops](https://github.com/career-ops-hq/career-ops).
+It reads the LinkedIn job-alert emails in your Fastmail mailbox over JMAP with a
+read-only API token, parses each job card, and hands the jobs to career-ops,
+which applies your blacklist and `portals.yml` title and location filters,
+dedups them against the tracker, pipeline and scan history, and adds the rest
+to `data/pipeline.md`.
 
-## What's included
+It never contacts linkedin.com. Each card's tracking link is reduced to its job
+id and returned as `https://www.linkedin.com/jobs/view/{id}/`. These are
+aggregator leads, so career-ops confirms each role on the employer's own
+careers page before evaluating it.
 
-| File | Purpose |
-| --- | --- |
-| [`.pre-commit-config.yaml`](.pre-commit-config.yaml) | gitleaks, markdownlint-cli2, zizmor and the standard `pre-commit-hooks` hygiene checks. zizmor is the workflow linter; actionlint isn't used because it rejects GitHub's `$/` self-repository `uses:` syntax ([rhysd/actionlint#711](https://github.com/rhysd/actionlint/issues/711)) |
-| [`.github/dependabot.yml`](.github/dependabot.yml) | One monthly `tooling` PR for GitHub Actions and pre-commit hook updates, with a 7-day cooldown |
-| [`.github/workflows/markdownlint.yml`](.github/workflows/markdownlint.yml) | Lints Markdown on pull requests with the shared [chorrell/workflows](https://github.com/chorrell/workflows) workflow |
-| [`.github/workflows/pre-commit.yml`](.github/workflows/pre-commit.yml) | Runs every pre-commit hook on pull requests, so hook updates are tested |
-| [`.github/workflows/dependabot-automerge.yml`](.github/workflows/dependabot-automerge.yml) | Auto-merges the Dependabot `tooling` PR once checks pass, when every update is minor or patch |
-| [`.github/workflows/zizmor.yml`](.github/workflows/zizmor.yml) | Audits GitHub Actions workflows with zizmor on pull requests and pushes to `main`, using the shared chorrell/workflows workflow |
-| [`.github/zizmor.yml`](.github/zizmor.yml) | Lets `chorrell/*` reusable workflows be pinned by tag; everything else must be pinned by commit hash |
-| [`.github/CODEOWNERS`](.github/CODEOWNERS) | Requests my review on every change |
-| [`.markdownlint.yaml`](.markdownlint.yaml) | Markdown lint rules (line length is not enforced) |
-| [`.gitignore`](.gitignore) / [`.gitattributes`](.gitattributes) | Language-agnostic ignores and LF normalization |
-| [`AGENTS.md`](AGENTS.md) / [`CLAUDE.md`](CLAUDE.md) | Guidance for coding agents; `CLAUDE.md` imports `AGENTS.md` |
-| [`LICENSE`](LICENSE) | Mozilla Public License 2.0 |
+Emails are accepted only from `jobalerts-noreply@linkedin.com` with a DMARC
+pass for `linkedin.com` recorded by Fastmail's own mail servers, so a forged
+alert can't inject leads.
 
-## Creating a repository from this template
+## Install
+
+Until the plugin is in the career-ops registry, link a checkout into your
+career-ops install:
 
 ```sh
-gh repo create chorrell/<name> --template chorrell/template-repo --public --clone
+git clone https://github.com/chorrell/career-ops-plugin-linkedin-alerts-fastmail.git
+ln -s "$PWD/career-ops-plugin-linkedin-alerts-fastmail" \
+  /path/to/career-ops/plugins.local/linkedin-alerts-fastmail
 ```
 
-Then:
+## Configure
 
-1. Retitle this README and describe the new project.
-2. Rewrite `AGENTS.md` for the project. Keep `CLAUDE.md` as it is.
-3. Add language-specific pre-commit hooks (ruff, shellcheck, hadolint,
-   terraform, ...) and Dependabot ecosystems (`docker`, `uv`, `terraform`, ...).
-4. Add language-specific entries to `.gitignore`.
-5. Check that `CODEOWNERS` and `LICENSE` still fit.
-6. Add the repository to
-   [chorrell/github-settings](https://github.com/chorrell/github-settings)
-   (its daily bot proposes it), with any CI checks it should require beyond
-   `zizmor / zizmor`, which every repository requires.
+1. Create a Fastmail API token (Settings → Privacy & Security → API tokens)
+   with JMAP Mail **read-only** access, and add it to the career-ops `.env`:
 
-## Local development
+   ```sh
+   FASTMAIL_API_TOKEN=fmu1-...
+   ```
 
-Install [prek](https://github.com/j178/prek) (`brew install prek`), a faster
-drop-in replacement for pre-commit, and run the hooks before pushing:
+2. Enable the plugin in `config/plugins.yml`:
+
+   ```yaml
+   plugins:
+     linkedin-alerts-fastmail:
+       enabled: true
+       days_back: 7   # how far back to look for alert emails
+       # sender: jobalerts-noreply@linkedin.com   # optional override
+   ```
+
+## Usage
+
+```sh
+node plugins.mjs run linkedin-alerts-fastmail --dry-run   # list what it would add
+node plugins.mjs run linkedin-alerts-fastmail             # add the leads to the pipeline
+```
+
+State lives in `data/linkedin-alerts-fastmail-state.json` under the career-ops
+data root:
+
+- `processed_email_ids`: alert emails already read, so each is ingested once.
+- `job_alerts`: LinkedIn job id → the saved searches ("build and release
+  engineer in Canada") that surfaced it, so alerts can be compared by how their
+  jobs scored and how far they got.
+
+If a run logs `yielded no jobs — the email format may have changed`, LinkedIn
+changed its alert layout and `parseAlertText` in `_helpers.mjs` needs updating.
+
+## Development
+
+The hooks run in Docker, so you need [prek](https://github.com/j178/prek) and a
+running Docker, not a local Node install:
 
 ```sh
 prek install
-prek run --all-files
+prek run --all-files          # every hook, including the plugin tests
+prek run plugin-tests --all-files
 ```
 
-The markdownlint hook runs in Docker, so Docker needs to be running.
+`plugin-tests` runs `test/parse.test.mjs` (parser, alert-name and DMARC tests
+against redacted real alerts) and `test/smoke.mjs` (the entry imports and
+exports the manifest's hooks) in `node:22-alpine`.
+
+career-ops pins a plugin's files when you trust it. After editing a linked
+checkout, bump `version` in `manifest.json` (career-ops re-pins quietly) or run
+`node plugins.mjs trust linkedin-alerts-fastmail`.
 
 ## License
 
-[MPL-2.0](LICENSE)
+[MIT](LICENSE)

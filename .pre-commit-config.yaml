@@ -12,8 +12,11 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+      # The .txt fixtures are verbatim alert emails; their trailing spaces are what the parser has to handle
       - id: trailing-whitespace
+        exclude: ^test/fixtures/.*\.txt$
       - id: end-of-file-fixer
+        exclude: ^test/fixtures/.*\.txt$
       - id: check-yaml
       - id: check-merge-conflict
       - id: check-added-large-files
@@ -23,3 +26,12 @@ repos:
     rev: v1.31.1
     hooks:
       - id: zizmor
+
+  - repo: local
+    hooks:
+      - id: plugin-tests
+        name: plugin tests (node)
+        entry: node:22-alpine sh -c 'node test/parse.test.mjs && node test/smoke.mjs'
+        language: docker_image
+        files: \.(mjs|json|txt)$
+        pass_filenames: false

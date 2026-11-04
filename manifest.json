@@ -1,0 +1,14 @@
+{
+  "id": "linkedin-alerts-fastmail",
+  "name": "LinkedIn alerts (Fastmail)",
+  "version": "0.2.1",
+  "apiVersion": 1,
+  "description": "Pull the jobs in your LinkedIn job-alert emails from Fastmail into your pipeline (JMAP, read-only token).",
+  "hooks": ["ingest"],
+  "jobPostings": true,
+  "requiredEnv": ["FASTMAIL_API_TOKEN"],
+  "allowedHosts": ["api.fastmail.com", "stl.api.fastmail.com"],
+  "skill": "skill.md",
+  "humanInTheLoop": true,
+  "homepage": "https://www.fastmail.com/dev/"
+}

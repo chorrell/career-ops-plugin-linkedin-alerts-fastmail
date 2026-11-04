@@ -15,10 +15,11 @@ for the plugin contract.
 ├── skill.md             # how-to the career-ops agent loads with `plugins.mjs skill`
 ├── test/
 │   ├── parse.test.mjs   # offline tests against redacted real alerts
+│   ├── ingest.test.mjs  # the ingest hook against a fake ctx and JMAP server
 │   ├── smoke.mjs        # entry imports and exports the manifest's hooks
 │   └── fixtures/        # alert text and Authentication-Results headers
 └── .github/workflows/
-    └── test.yml         # runs both tests on PRs and pushes to main
+    └── test.yml         # runs the tests on PRs and pushes to main
 ```
 
 ## Rules
@@ -43,7 +44,7 @@ for the plugin contract.
   career-ops pins the file hashes when the user trusts the plugin, and an edit
   without a version bump is blocked as possible tampering.
 - Run `prek run --all-files` before pushing. Hooks run in Docker rather than
-  needing local tools: the `plugin-tests` hook runs both tests in
+  needing local tools: the `plugin-tests` hook runs the tests in
   `node:22-alpine`, and markdownlint has its own image, so Docker has to be
   running.
   CI runs the tests, pre-commit and markdownlint on pull requests, and zizmor

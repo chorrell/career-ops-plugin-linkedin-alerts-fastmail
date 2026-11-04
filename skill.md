@@ -39,8 +39,9 @@ address, because the DMARC check only accepts mail from `linkedin.com`.
 evaluating one, confirm the role on the employer's own careers page (the
 career-ops rule "Aggregator Listings -- Confirm at the Employer"). State is kept
 in `data/linkedin-alerts-fastmail-state.json` under the data root:
-`processed_email_ids` (alerts already read) and `job_alerts` (LinkedIn job id →
+`processed_email_ids` (alerts that yielded jobs) and `job_alerts` (LinkedIn job id →
 the saved searches that surfaced it).
 
 If a run logs "yielded no jobs — the email format may have changed", LinkedIn
 changed its alert layout and `_helpers.mjs` → `parseAlertText` needs updating.
+Those alerts stay unread, so the first run after the fix picks them up.

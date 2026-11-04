@@ -26,4 +26,5 @@ jobs:
         with:
           node-version: "22"
       - run: node test/parse.test.mjs
+      - run: node test/ingest.test.mjs
       - run: node test/smoke.mjs

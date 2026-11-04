@@ -15,6 +15,7 @@ for the plugin contract.
 ├── skill.md             # how-to the career-ops agent loads with `plugins.mjs skill`
 ├── test/
 │   ├── parse.test.mjs   # offline tests against redacted real alerts
+│   ├── ingest.test.mjs  # the ingest hook against a fake ctx and JMAP server
 │   ├── smoke.mjs        # entry imports and exports the manifest's hooks
 │   └── fixtures/        # alert text and Authentication-Results headers
 ├── .pre-commit-config.yaml  # gitleaks, markdownlint, pre-commit-hooks, zizmor, plugin-tests

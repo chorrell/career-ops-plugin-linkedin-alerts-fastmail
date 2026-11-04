@@ -11,14 +11,22 @@ for the plugin contract.
 ```text
 ├── manifest.json        # id, hooks, requiredEnv, allowedHosts, jobPostings, humanInTheLoop
 ├── index.mjs            # ingest hook: JMAP session → Email/query + Email/get → cards → Job[]
-├── _helpers.mjs         # pure helpers: parseAlertText, parseAlertName, isAuthenticLinkedIn
+├── _helpers.mjs         # pure helpers: authResultsClauses, isAuthenticLinkedIn, parseAlertName, parseAlertText
 ├── skill.md             # how-to the career-ops agent loads with `plugins.mjs skill`
 ├── test/
 │   ├── parse.test.mjs   # offline tests against redacted real alerts
 │   ├── smoke.mjs        # entry imports and exports the manifest's hooks
 │   └── fixtures/        # alert text and Authentication-Results headers
-└── .github/workflows/
-    └── test.yml         # runs both tests on PRs and pushes to main
+├── .pre-commit-config.yaml  # gitleaks, markdownlint, pre-commit-hooks, zizmor, plugin-tests
+└── .github/
+    ├── dependabot.yml   # Actions and pre-commit hooks, one monthly PR
+    ├── zizmor.yml       # lets chorrell/* reusable workflows be pinned by tag
+    └── workflows/
+        ├── test.yml                  # the tests, on PRs and pushes to main
+        ├── pre-commit.yml            # every pre-commit hook, on PRs
+        ├── markdownlint.yml          # on PRs to main
+        ├── zizmor.yml                # on PRs and pushes to main
+        └── dependabot-automerge.yml  # merges Dependabot's minor and patch PRs
 ```
 
 ## Rules
@@ -37,15 +45,22 @@ for the plugin contract.
   similar tracking parameters and the recipient's name and address before
   adding a new alert fixture. `gitleaks` runs in pre-commit, but it won't catch
   personal data.
+- **Keep `skill.md` free of career-ops' injection red flags.** `plugins.mjs
+  skill` warns about a skill that names the core's agent-rules file or its
+  shared modes directory, or reads like an instruction override. Refer to
+  career-ops rules by their heading instead.
 - **Pure logic goes in `_helpers.mjs`** so it can be tested offline; `index.mjs`
   stays the JMAP glue.
-- **Bump `version` in `manifest.json` on every change to plugin files.**
-  career-ops pins the file hashes when the user trusts the plugin, and an edit
-  without a version bump is blocked as possible tampering.
-- Run `prek run --all-files` before pushing. Hooks run in Docker rather than
-  needing local tools: the `plugin-tests` hook runs both tests in
-  `node:22-alpine`, and markdownlint has its own image, so Docker has to be
-  running.
+- **Bump `version` in `manifest.json` on every change to any file in the
+  repository**, docs and tests included. When the user trusts the plugin,
+  career-ops hashes every file under its directory except `.git/` and
+  `node_modules/`, and a change without a version bump is blocked as possible
+  tampering. For the same reason, keep worktrees, logs and other stray files
+  (`.DS_Store`, `.claude/`) out of a checkout that's linked into career-ops.
+- Run `prek run --all-files` before pushing. The `plugin-tests` hook runs the
+  tests in `node:22-alpine` and markdownlint has its own image, so Docker has
+  to be running. prek installs the other hooks itself, and no local Node is
+  needed.
   CI runs the tests, pre-commit and markdownlint on pull requests, and zizmor
   on pull requests and pushes to `main`.
 - Third-party actions are pinned by commit hash with a version comment;

@@ -68,12 +68,18 @@ changed its alert layout and `parseAlertText` in `_helpers.mjs` needs updating.
 
 ## Development
 
+The hooks run in Docker, so you need [prek](https://github.com/j178/prek) and a
+running Docker, not a local Node install:
+
 ```sh
-node test/parse.test.mjs   # parser, alert-name and DMARC tests against redacted real alerts
-node test/smoke.mjs        # the entry imports and exports the manifest's hooks
 prek install
-prek run --all-files
+prek run --all-files          # every hook, including the plugin tests
+prek run plugin-tests --all-files
 ```
+
+`plugin-tests` runs `test/parse.test.mjs` (parser, alert-name and DMARC tests
+against redacted real alerts) and `test/smoke.mjs` (the entry imports and
+exports the manifest's hooks) in `node:22-alpine`.
 
 career-ops pins a plugin's files when you trust it. After editing a linked
 checkout, bump `version` in `manifest.json` (career-ops re-pins quietly) or run

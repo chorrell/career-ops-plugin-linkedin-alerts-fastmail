@@ -42,8 +42,10 @@ for the plugin contract.
 - **Bump `version` in `manifest.json` on every change to plugin files.**
   career-ops pins the file hashes when the user trusts the plugin, and an edit
   without a version bump is blocked as possible tampering.
-- Run `node test/parse.test.mjs && node test/smoke.mjs` and
-  `prek run --all-files` before pushing (the markdownlint hook needs Docker).
+- Run `prek run --all-files` before pushing. Hooks run in Docker rather than
+  needing local tools: the `plugin-tests` hook runs both tests in
+  `node:22-alpine`, and markdownlint has its own image, so Docker has to be
+  running.
   CI runs the tests, pre-commit and markdownlint on pull requests, and zizmor
   on pull requests and pushes to `main`.
 - Third-party actions are pinned by commit hash with a version comment;

@@ -39,3 +39,4 @@ evaluating one, confirm the role on the employer's own careers page (AGENTS.md,
 
 If a run logs "yielded no jobs — the email format may have changed", LinkedIn
 changed its alert layout and `_helpers.mjs` → `parseAlertText` needs updating.
+Those alerts stay unread, so the first run after the fix picks them up.

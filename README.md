@@ -58,13 +58,20 @@ node plugins.mjs run linkedin-alerts-fastmail             # add the leads to the
 State lives in `data/linkedin-alerts-fastmail-state.json` under the career-ops
 data root:
 
-- `processed_email_ids`: alert emails already read, so each is ingested once.
+- `processed_email_ids`: alert emails that yielded jobs, so each is ingested
+  once. An email that fails the sender or DMARC check, or parses to no jobs,
+  isn't recorded, so later runs keep trying it until it falls out of
+  `days_back`.
 - `job_alerts`: LinkedIn job id → the saved searches ("build and release
   engineer in Canada") that surfaced it, so alerts can be compared by how their
   jobs scored and how far they got.
 
 If a run logs `yielded no jobs — the email format may have changed`, LinkedIn
 changed its alert layout and `parseAlertText` in `_helpers.mjs` needs updating.
+Those alerts stay unread, so the first run after the fix picks them up.
+
+Each run reads at most 100 unread alerts, oldest first. A bigger backlog is
+worked through over the next runs.
 
 ## Development
 
@@ -78,8 +85,9 @@ prek run plugin-tests --all-files
 ```
 
 `plugin-tests` runs `test/parse.test.mjs` (parser, alert-name and DMARC tests
-against redacted real alerts) and `test/smoke.mjs` (the entry imports and
-exports the manifest's hooks) in `node:22-alpine`.
+against redacted real alerts), `test/ingest.test.mjs` (the ingest hook against
+a fake Fastmail) and `test/smoke.mjs` (the entry imports and exports the
+manifest's hooks) in `node:22-alpine`.
 
 career-ops pins a plugin's files when you trust it. After editing a linked
 checkout, bump `version` in `manifest.json` (career-ops re-pins quietly) or run

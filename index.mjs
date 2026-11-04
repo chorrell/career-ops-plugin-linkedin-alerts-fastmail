@@ -15,7 +15,7 @@
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'fs';
 import { dirname, join } from 'path';
-import { isAuthenticLinkedIn, parseAlertName, parseAlertText } from './_helpers.mjs';
+import { isAuthenticLinkedIn, parseAlertName, parseAlertText, printable } from './_helpers.mjs';
 
 const SESSION_URL = 'https://api.fastmail.com/jmap/session';
 const MAIL = 'urn:ietf:params:jmap:mail';
@@ -162,7 +162,8 @@ export default {
     for (const email of batch.map(id => byId.get(id)).filter(Boolean)) {
       const fromAddr = (email.from?.[0]?.email || '').toLowerCase();
       if (fromAddr !== sender.toLowerCase() || !isAuthenticLinkedIn(email['header:Authentication-Results:asText:all'])) {
-        ctx.log(`linkedin-alerts-fastmail: skipping unauthenticated email "${email.subject}"`);
+        // The subject is the sender's text, and this output is read by the agent.
+        ctx.log(`linkedin-alerts-fastmail: skipping unauthenticated email ${JSON.stringify(printable(email.subject))}`);
         rejected++;
         continue;
       }

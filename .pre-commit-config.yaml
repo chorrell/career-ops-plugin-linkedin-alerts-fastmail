@@ -12,11 +12,11 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
-      # Fixtures are verbatim alert emails; their trailing spaces are what the parser has to handle
+      # The .txt fixtures are verbatim alert emails; their trailing spaces are what the parser has to handle
       - id: trailing-whitespace
-        exclude: ^test/fixtures/
+        exclude: ^test/fixtures/.*\.txt$
       - id: end-of-file-fixer
-        exclude: ^test/fixtures/
+        exclude: ^test/fixtures/.*\.txt$
       - id: check-yaml
       - id: check-merge-conflict
       - id: check-added-large-files

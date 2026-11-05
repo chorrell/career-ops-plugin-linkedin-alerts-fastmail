@@ -19,8 +19,8 @@ dedups against the tracker, pipeline and scan history, and writes the rest to
 
 ## Setup
 
-`FASTMAIL_API_TOKEN` in `.env`: a Fastmail API token of type JMAP with only the
-"Read-only access" scope. Enable it with
+`FASTMAIL_API_TOKEN` in `.env`: a Fastmail API token of type "Read-only access"
+with the "Email" scope. Enable it with
 `node plugins.mjs enable linkedin-alerts-fastmail --confirm`. Settings in
 `config/plugins.yml`:
 

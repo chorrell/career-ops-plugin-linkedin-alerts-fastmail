@@ -10,7 +10,7 @@
 // Enable in config/plugins.yml:
 //   linkedin-alerts-fastmail: { enabled: true, days_back: 7 }
 // Add to .env: FASTMAIL_API_TOKEN (Fastmail → Settings → Privacy & Security →
-// Manage API tokens; type JMAP, scope "Read-only access" only).
+// Manage API tokens; type "Read-only access", scope "Email").
 // Run:  node plugins.mjs run linkedin-alerts-fastmail [--dry-run]
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'fs';
@@ -108,7 +108,7 @@ export default {
     const session = await (await ctx.fetch(SESSION_URL, { headers: auth, timeoutMs: timeLeft() })).json();
     const apiUrl = session.apiUrl;
     const accountId = session.primaryAccounts?.[MAIL];
-    if (!apiUrl || !accountId) throw new Error('linkedin-alerts-fastmail: the JMAP session has no mail account (does the token have Mail access?)');
+    if (!apiUrl || !accountId) throw new Error('linkedin-alerts-fastmail: the JMAP session has no mail account (does the token have the Email scope?)');
 
     const after = new Date(Date.now() - daysBack * 86_400_000).toISOString().replace(/\.\d{3}Z$/, 'Z');
     ctx.log(`linkedin-alerts-fastmail: alerts from ${sender} since ${after.slice(0, 10)}`);

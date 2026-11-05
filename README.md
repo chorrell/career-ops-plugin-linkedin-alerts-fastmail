@@ -32,10 +32,10 @@ ln -s "$PWD/career-ops-plugin-linkedin-alerts-fastmail" \
 ## Configure
 
 1. Create a Fastmail API token: Settings → Privacy & Security → Connected apps
-   & API tokens → Manage API tokens → New API token. Choose type **JMAP** and
-   only the **Read-only access** scope. The **Email** scope would also let the
-   token modify and delete mail. Fastmail's Basic plan has no API tokens. Add
-   the token to the career-ops `.env`:
+   & API tokens → Manage API tokens → New API token. Choose type **Read-only
+   access** and the **Email** scope. The plugin needs Email to read mail, and
+   read-only access stops the token from changing or deleting it. Fastmail's
+   Basic plan has no API tokens. Add the token to the career-ops `.env`:
 
    ```sh
    FASTMAIL_API_TOKEN=fmu1-...

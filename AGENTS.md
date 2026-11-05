@@ -35,7 +35,9 @@ for the plugin contract.
 - **No dependencies.** Plain ESM, Node built-ins only, no build step and no
   `package.json`. Network calls go through `ctx.fetch`, which career-ops limits
   to `manifest.json` → `allowedHosts`; a new Fastmail API host has to be added
-  there.
+  there. `stl.api.fastmail.com` is listed because the JMAP session's `apiUrl`
+  points there (seen November 2026), although Fastmail's docs only name
+  `api.fastmail.com`. Don't remove it.
 - **Read-only, never submits.** The plugin reads the user's own mail and
   returns leads. It never fetches linkedin.com, writes nothing outside its own
   state file under `ctx.dataRoot`, and keeps `humanInTheLoop: true`.

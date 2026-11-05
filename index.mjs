@@ -10,7 +10,7 @@
 // Enable in config/plugins.yml:
 //   linkedin-alerts-fastmail: { enabled: true, days_back: 7 }
 // Add to .env: FASTMAIL_API_TOKEN (Fastmail → Settings → Privacy & Security →
-// API tokens; protocol JMAP, Mail, read-only).
+// Manage API tokens; type JMAP, scope "Read-only access" only).
 // Run:  node plugins.mjs run linkedin-alerts-fastmail [--dry-run]
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'fs';

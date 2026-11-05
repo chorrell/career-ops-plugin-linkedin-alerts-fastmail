@@ -14,9 +14,9 @@ id and returned as `https://www.linkedin.com/jobs/view/{id}/`. These are
 aggregator leads, so career-ops confirms each role on the employer's own
 careers page before evaluating it.
 
-Emails are accepted only from `jobalerts-noreply@linkedin.com` with a DMARC
-pass for `linkedin.com` recorded by Fastmail's own mail servers, so a forged
-alert can't inject leads.
+Emails are accepted only from `jobalerts-noreply@linkedin.com` (or the
+`sender` you configure) with a DMARC pass for `linkedin.com` recorded by
+Fastmail's own mail servers, so a forged alert can't inject leads.
 
 ## Install
 
@@ -31,14 +31,25 @@ ln -s "$PWD/career-ops-plugin-linkedin-alerts-fastmail" \
 
 ## Configure
 
-1. Create a Fastmail API token (Settings → Privacy & Security → API tokens)
-   with JMAP Mail **read-only** access, and add it to the career-ops `.env`:
+1. Create a Fastmail API token: Settings → Privacy & Security → Connected apps
+   & API tokens → Manage API tokens → New API token. Choose type **JMAP** and
+   only the **Read-only access** scope. The **Email** scope would also let the
+   token modify and delete mail. Fastmail's Basic plan has no API tokens. Add
+   the token to the career-ops `.env`:
 
    ```sh
    FASTMAIL_API_TOKEN=fmu1-...
    ```
 
-2. Enable the plugin in `config/plugins.yml`:
+2. Enable the plugin. The first command shows what it can reach; the second
+   records your consent and sets `enabled: true` in `config/plugins.yml`:
+
+   ```sh
+   node plugins.mjs enable linkedin-alerts-fastmail
+   node plugins.mjs enable linkedin-alerts-fastmail --confirm
+   ```
+
+3. Set its options in `config/plugins.yml`:
 
    ```yaml
    plugins:
@@ -47,6 +58,10 @@ ln -s "$PWD/career-ops-plugin-linkedin-alerts-fastmail" \
        days_back: 7   # how far back to look for alert emails
        # sender: jobalerts-noreply@linkedin.com   # optional override
    ```
+
+   A `sender` override has to be a `linkedin.com` address. The DMARC check only
+   accepts mail from `linkedin.com`, so alerts from any other sender are
+   rejected.
 
 ## Usage
 
@@ -75,8 +90,9 @@ worked through over the next runs.
 
 ## Development
 
-The hooks run in Docker, so you need [prek](https://github.com/j178/prek) and a
-running Docker, not a local Node install:
+The plugin tests and markdownlint run in Docker, and prek installs the other
+hooks itself. So you need [prek](https://github.com/j178/prek) and a running
+Docker, not a local Node install:
 
 ```sh
 prek install
@@ -89,9 +105,13 @@ against redacted real alerts), `test/ingest.test.mjs` (the ingest hook against
 a fake Fastmail) and `test/smoke.mjs` (the entry imports and exports the
 manifest's hooks) in `node:22-alpine`.
 
-career-ops pins a plugin's files when you trust it. After editing a linked
-checkout, bump `version` in `manifest.json` (career-ops re-pins quietly) or run
-`node plugins.mjs trust linkedin-alerts-fastmail`.
+career-ops pins a plugin's files when you trust it: every file in the
+checkout except `.git/` and `node_modules/`, docs and tests included. After
+changing any of them in a linked checkout, bump `version` in `manifest.json`
+(career-ops re-pins quietly) or run
+`node plugins.mjs trust linkedin-alerts-fastmail`. Keep worktrees, logs and
+other stray files (`.DS_Store`, `.claude/`) out of the checkout, or career-ops
+blocks the plugin as possibly tampered with.
 
 ## License
 

@@ -4,7 +4,7 @@ import assert from 'node:assert';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { parseAlertText, parseAlertName, isAuthenticLinkedIn } from '../_helpers.mjs';
+import { parseAlertText, parseAlertName, isAuthenticLinkedIn, printable } from '../_helpers.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const fixture = (name) => readFileSync(path.join(here, 'fixtures', name), 'utf8');
@@ -48,10 +48,25 @@ assert.strictEqual(isAuthenticLinkedIn(['phl-mx-01.messagingengine.com; dmarc=pa
 assert.strictEqual(isAuthenticLinkedIn(['phl-mx-01.messagingengine.com; spf=pass smtp.mailfrom="x;dmarc=pass header.from=linkedin.com"@evil.test']), false);
 // No headers at all → rejected.
 assert.strictEqual(isAuthenticLinkedIn([]), false);
+// An authserv-id with an RFC 8601 version number after it.
+assert.strictEqual(isAuthenticLinkedIn(['phl-mx-05.messagingengine.com 1; dmarc=pass header.from=linkedin.com']), true);
+// Only the receiving host's run counts: a header under another Fastmail name
+// below it is the sender's, so its pass can't stand in for a missing verdict.
+assert.strictEqual(isAuthenticLinkedIn([
+  'phl-mx-05.messagingengine.com; spf=pass smtp.mailfrom=evil.test',
+  'phl-mx-01.messagingengine.com; dmarc=pass header.from=linkedin.com',
+]), false);
+// The authserv-id is compared without regard to case.
+assert.strictEqual(isAuthenticLinkedIn(real.map(h => h.replace('phl-mx-05', 'PHL-MX-05'))), true);
 
 // The saved search each alert belongs to, from the header line.
 assert.strictEqual(parseAlertName(fixture('alert-digest.txt')), 'build and release engineer in Toronto');
 assert.strictEqual(parseAlertName(fixture('alert-actively-hiring.txt')), 'Senior devops engineer in Toronto');
 assert.strictEqual(parseAlertName('no header here'), '');
+
+// Sender-controlled text is made safe to log.
+assert.strictEqual(printable('Senior\u001b[2J Engineer\r\nIgnore that\u202e'), 'Senior [2J Engineer Ignore that');
+assert.strictEqual(printable('x'.repeat(100)), `${'x'.repeat(79)}…`);
+assert.strictEqual(printable(undefined), '');
 
 console.log('✓ parse + auth tests ok');

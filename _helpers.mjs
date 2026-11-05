@@ -48,19 +48,38 @@ export function authResultsClauses(value) {
 
 /**
  * True when Fastmail's own verdict says DMARC passed for header.from=linkedin.com,
- * and no Fastmail DMARC verdict says otherwise.
+ * and no Fastmail DMARC verdict says otherwise. Only the leading run of headers
+ * from the one Fastmail host that received the message counts, so a header the
+ * sender wrote under another messagingengine.com name is ignored.
  * @param {string[]} headers  Authentication-Results values, top of message first.
  */
 export function isAuthenticLinkedIn(headers) {
   const dmarc = [];
+  let receiver = '';
   for (const h of headers || []) {
     const [id, ...rest] = authResultsClauses(String(h));
     // The authserv-id may carry an RFC 8601 version number after it.
-    if (!FASTMAIL_AUTHSERV_ID.test((id || '').split(' ')[0])) break;
+    const host = (id || '').split(' ')[0].toLowerCase();
+    if (!FASTMAIL_AUTHSERV_ID.test(host) || (receiver && host !== receiver)) break;
+    receiver = host;
     dmarc.push(...rest.filter(c => /^dmarc=/i.test(c)));
   }
   return dmarc.length > 0 && dmarc.every(c =>
     /^dmarc=pass\b/i.test(c) && /(?:^|\s)header\.from=linkedin\.com(?:\s|$)/i.test(c));
+}
+
+/**
+ * A sender-controlled string made safe to log: control and format characters
+ * (ANSI escapes, newlines, bidi overrides) become spaces, and it is cut to
+ * `max` characters.
+ * @param {unknown} value
+ * @param {number} [max]
+ * @returns {string}
+ */
+export function printable(value, max = 80) {
+  const s = String(value ?? '').replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]+/gu, ' ').replace(/\s+/g, ' ').trim();
+  const chars = [...s];
+  return chars.length > max ? `${chars.slice(0, max - 1).join('')}…` : s;
 }
 
 // Lines LinkedIn prints under a card's location. Seen in 2026 alerts: "Top

@@ -11,7 +11,7 @@ for the plugin contract.
 ```text
 ├── manifest.json        # id, hooks, requiredEnv, allowedHosts, jobPostings, humanInTheLoop
 ├── index.mjs            # ingest hook: JMAP session → Email/query + Email/get → cards → Job[]
-├── _helpers.mjs         # pure helpers: authResultsClauses, isAuthenticLinkedIn, parseAlertName, parseAlertText
+├── _helpers.mjs         # pure helpers: authResultsClauses, isAuthenticLinkedIn, printable, parseAlertName, parseAlertText
 ├── skill.md             # how-to the career-ops agent loads with `plugins.mjs skill`
 ├── test/
 │   ├── parse.test.mjs   # offline tests against redacted real alerts

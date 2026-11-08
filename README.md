@@ -63,6 +63,13 @@ ln -s "$PWD/career-ops-plugin-linkedin-alerts-fastmail" \
    accepts mail from `linkedin.com`, so alerts from any other sender are
    rejected.
 
+## Guides
+
+- [Setting up LinkedIn job alerts](docs/linkedin-alerts.md): which alerts to
+  create and how, so the plugin gets useful leads.
+- [Running the plugin with every scan](docs/scan.md): a plain `scan` doesn't
+  run it; a house rule or a scheduled job does.
+
 ## Usage
 
 ```sh

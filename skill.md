@@ -17,6 +17,10 @@ dedups against the tracker, pipeline and scan history, and writes the rest to
 - `node plugins.mjs run linkedin-alerts-fastmail --dry-run`: list what it would add.
 - `node plugins.mjs run linkedin-alerts-fastmail`: add the leads to the pipeline.
 
+A plain `node scan.mjs` doesn't run this plugin, because scans load only
+provider plugins. If the user wants alerts included in every scan, see
+`docs/scan.md` in the plugin's repository for the house rule.
+
 ## Setup
 
 `FASTMAIL_API_TOKEN` in `.env`: a Fastmail API token of type "Read-only access"

@@ -13,6 +13,9 @@ for the plugin contract.
 ├── index.mjs            # ingest hook: JMAP session → Email/query + Email/get → cards → Job[]
 ├── _helpers.mjs         # pure helpers: authResultsClauses, isAuthenticLinkedIn, printable, parseAlertName, parseAlertText
 ├── skill.md             # how-to the career-ops agent loads with `plugins.mjs skill`
+├── docs/
+│   ├── linkedin-alerts.md  # setting up LinkedIn alerts that give useful leads
+│   └── scan.md             # running the plugin with every career-ops scan
 ├── test/
 │   ├── parse.test.mjs   # offline tests against redacted real alerts
 │   ├── ingest.test.mjs  # the ingest hook against a fake ctx and JMAP server

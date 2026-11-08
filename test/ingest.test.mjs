@@ -111,7 +111,7 @@ try {
     assert.strictEqual(jobs[6].title, 'Staff Platform Engineer');
     // Only the emails that yielded jobs are marked processed.
     assert.deepStrictEqual(readState().processed_email_ids, ['digest', 'hiring']);
-    assert.deepStrictEqual(readState().job_alerts['4485455514'], ['build and release engineer in Toronto']);
+    assert.deepStrictEqual(readState().job_alerts['4485455514'], ['platform engineer in Canada']);
     assert(logs.some(l => /WARNING 1 alert\(s\) yielded no jobs/.test(l)));
     assert(logs.some(l => /WARNING 2 email\(s\) .* failed the sender or DMARC check/.test(l)));
   }

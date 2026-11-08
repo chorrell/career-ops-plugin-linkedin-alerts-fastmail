@@ -84,8 +84,8 @@ data root:
   once. An email that fails the sender or DMARC check, or parses to no jobs,
   isn't recorded, so later runs keep trying it until it falls out of
   `days_back`.
-- `job_alerts`: LinkedIn job id → the saved searches ("build and release
-  engineer in Canada") that surfaced it, so alerts can be compared by how their
+- `job_alerts`: LinkedIn job id → the saved searches ("platform engineer
+  in Canada") that surfaced it, so alerts can be compared by how their
   jobs scored and how far they got.
 
 If a run logs `yielded no jobs — the email format may have changed`, LinkedIn

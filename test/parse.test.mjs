@@ -60,8 +60,8 @@ assert.strictEqual(isAuthenticLinkedIn([
 assert.strictEqual(isAuthenticLinkedIn(real.map(h => h.replace('phl-mx-05', 'PHL-MX-05'))), true);
 
 // The saved search each alert belongs to, from the header line.
-assert.strictEqual(parseAlertName(fixture('alert-digest.txt')), 'build and release engineer in Toronto');
-assert.strictEqual(parseAlertName(fixture('alert-actively-hiring.txt')), 'Senior devops engineer in Toronto');
+assert.strictEqual(parseAlertName(fixture('alert-digest.txt')), 'platform engineer in Canada');
+assert.strictEqual(parseAlertName(fixture('alert-actively-hiring.txt')), 'Senior site reliability engineer in Canada');
 assert.strictEqual(parseAlertName('no header here'), '');
 
 // Sender-controlled text is made safe to log.

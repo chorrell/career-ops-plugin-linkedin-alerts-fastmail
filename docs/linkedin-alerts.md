@@ -55,7 +55,7 @@ The plugin records each job's saved search in `job_alerts` in
 
 ```json
 "job_alerts": {
-  "4485455514": ["build and release engineer in Toronto"]
+  "4485455514": ["platform engineer in Canada"]
 }
 ```
 

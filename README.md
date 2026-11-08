@@ -20,8 +20,17 @@ Fastmail's own mail servers, so a forged alert can't inject leads.
 
 ## Install
 
-Until the plugin is in the career-ops registry, link a checkout into your
-career-ops install:
+From your career-ops checkout, once the plugin is in the career-ops registry:
+
+```sh
+node plugins.mjs add career-ops-plugin-linkedin-alerts-fastmail
+```
+
+That installs the commit the registry approved into
+`plugins.local/linkedin-alerts-fastmail`.
+
+To run a checkout instead, for development or before the plugin is listed,
+link it into place:
 
 ```sh
 git clone https://github.com/chorrell/career-ops-plugin-linkedin-alerts-fastmail.git

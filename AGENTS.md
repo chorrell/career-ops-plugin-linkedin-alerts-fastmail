@@ -21,12 +21,17 @@ for the plugin contract.
 │   ├── ingest.test.mjs  # the ingest hook against a fake ctx and JMAP server
 │   ├── smoke.mjs        # entry imports and exports the manifest's hooks
 │   └── fixtures/        # alert text and Authentication-Results headers
+├── CHANGELOG.md         # version history, written by release-please
+├── release-please-config.json  # simple release type; bumps manifest.json's version
+├── .release-please-manifest.json  # the current released version
+├── .markdownlint-cli2.yaml  # markdownlint ignores CHANGELOG.md
 ├── .pre-commit-config.yaml  # gitleaks, markdownlint, pre-commit-hooks, zizmor, plugin-tests
 └── .github/
     ├── dependabot.yml   # Actions and pre-commit hooks, one monthly PR
     ├── zizmor.yml       # lets chorrell/* reusable workflows be pinned by tag
     └── workflows/
         ├── test.yml                  # the tests, on PRs and pushes to main
+        ├── release.yml               # release-please on pushes to main (GitHub App token)
         ├── pre-commit.yml            # every pre-commit hook, on PRs
         ├── markdownlint.yml          # on PRs to main
         ├── zizmor.yml                # on PRs and pushes to main
@@ -57,12 +62,17 @@ for the plugin contract.
   career-ops rules by their heading instead.
 - **Pure logic goes in `_helpers.mjs`** so it can be tested offline; `index.mjs`
   stays the JMAP glue.
-- **Bump `version` in `manifest.json` on every change to any file in the
-  repository**, docs and tests included. When the user trusts the plugin,
-  career-ops hashes every file under its directory except `.git/` and
-  `node_modules/`, and a change without a version bump is blocked as possible
-  tampering. For the same reason, keep worktrees, logs and other stray files
-  (`.DS_Store`, `.claude/`) out of a checkout that's linked into career-ops.
+- **Don't bump `version` or edit `CHANGELOG.md` by hand.** release-please keeps
+  a release PR open with the next version, from conventional commits (`feat:`
+  and `fix:` cut a release; `docs:`, `chore:`, `ci:` and `test:` don't).
+  Merging it bumps `manifest.json`, writes `CHANGELOG.md`, and tags `vX.Y.Z`
+  with a GitHub Release.
+- **career-ops runs a release tag, not the dev checkout.** It hashes every file
+  under the plugin's directory except `.git` and `node_modules`, and blocks a
+  change without a version bump as possible tampering. Between releases,
+  `main` changes files without a bump, so link career-ops to a worktree at the
+  latest tag (README, "Development"). Keep worktrees, logs and other stray
+  files (`.DS_Store`, `.claude/`) out of whatever directory is linked.
 - Run `prek run --all-files` before pushing. The `plugin-tests` hook runs the
   tests in `node:22-alpine` and markdownlint has its own image, so Docker has
   to be running. prek installs the other hooks itself, and no local Node is

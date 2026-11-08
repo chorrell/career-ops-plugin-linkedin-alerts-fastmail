@@ -112,13 +112,27 @@ against redacted real alerts), `test/ingest.test.mjs` (the ingest hook against
 a fake Fastmail) and `test/smoke.mjs` (the entry imports and exports the
 manifest's hooks) in `node:22-alpine`.
 
-career-ops pins a plugin's files when you trust it: every file in the
-checkout except `.git/` and `node_modules/`, docs and tests included. After
-changing any of them in a linked checkout, bump `version` in `manifest.json`
-(career-ops re-pins quietly) or run
-`node plugins.mjs trust linkedin-alerts-fastmail`. Keep worktrees, logs and
-other stray files (`.DS_Store`, `.claude/`) out of the checkout, or career-ops
-blocks the plugin as possibly tampered with.
+Releases are cut by release-please from conventional commits: merging its
+release PR bumps `version` in `manifest.json`, updates `CHANGELOG.md` and tags
+`vX.Y.Z`. Don't bump the version by hand.
+
+career-ops pins a plugin's files when you trust it: every file except `.git`
+and `node_modules`, docs and tests included. A change without a version bump is
+blocked as possible tampering, and `main` changes between releases. So to run
+the plugin from source, link career-ops to a worktree at the latest release
+tag, kept outside your working checkout:
+
+```sh
+git -C career-ops-plugin-linkedin-alerts-fastmail worktree add \
+  ../linkedin-alerts-fastmail-release v0.4.0
+ln -sfn "$PWD/linkedin-alerts-fastmail-release" \
+  /path/to/career-ops/plugins.local/linkedin-alerts-fastmail
+```
+
+To upgrade, check out the next tag there
+(`git -C linkedin-alerts-fastmail-release checkout v0.4.1`). The version goes
+up with it, so career-ops re-pins quietly. To try unreleased changes, run
+`node plugins.mjs trust linkedin-alerts-fastmail` after switching.
 
 ## License
 

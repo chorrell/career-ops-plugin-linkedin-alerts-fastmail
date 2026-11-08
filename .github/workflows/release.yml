@@ -1,0 +1,44 @@
+---
+# Release automation, modelled on chorrell/workflows. release-please keeps a
+# release PR open with the next version (from conventional commits), the
+# version bump in manifest.json, and CHANGELOG.md. Merging that PR creates a
+# vX.Y.Z tag and GitHub Release, which is what a career-ops registry entry
+# pins.
+#
+# release-please runs with a GitHub App token, not GITHUB_TOKEN, because PRs
+# opened with GITHUB_TOKEN don't trigger CI, and the ruleset requires CI on
+# every PR.
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: release-please
+    runs-on: ubuntu-slim
+    # The App's private key lives in this environment, which only main can use
+    environment: release
+    steps:
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+
+      - name: Run release-please
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}

@@ -31,7 +31,7 @@ Problems the rule should report rather than stop on:
 | Message | Cause | Fix |
 | --- | --- | --- |
 | `missing FASTMAIL_API_TOKEN in .env` | No token in the career-ops `.env` | Add it (see the README) |
-| `files changed since you trusted it without a version bump` | The plugin's files changed without a `version` bump | Bump it, or run `node plugins.mjs trust linkedin-alerts-fastmail` |
+| `files changed since you trusted it without a version bump` | The plugin's files changed without a `version` bump | Link a release tag (README, "Development"), or run `node plugins.mjs trust linkedin-alerts-fastmail` |
 | `yielded no jobs — the email format may have changed` | LinkedIn changed its alert layout | Update `parseAlertText` in `_helpers.mjs`; those alerts stay unread until then |
 | `failed the sender or DMARC check` | An email from the alert address didn't pass Fastmail's DMARC check | Usually spoofed mail; nothing to do unless every alert fails |
 

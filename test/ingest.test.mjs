@@ -133,6 +133,25 @@ try {
     assert.deepStrictEqual(readState().processed_email_ids, ['digest', 'hiring']);
   }
 
+  // With every alert in the window already read, the log says so rather than
+  // a bare "0 new", which reads as the alerts having stopped.
+  {
+    rmSync(path.join(dataRoot, 'data'), { recursive: true });
+    const read = fakeFastmail(mailbox.slice(0, 2));
+    await plugin.ingest(makeCtx(read.fetch, { dataRoot }).ctx);
+    const { ctx, logs } = makeCtx(read.fetch, { dataRoot });
+    assert.deepStrictEqual(await plugin.ingest(ctx), []);
+    assert(logs.some(l => /0 new alert email\(s\), 0 job\(s\); all 2 alert email\(s\) since \d{4}-\d{2}-\d{2} were read by earlier runs/.test(l)));
+    assert(!logs.some(l => /WARNING/.test(l)));
+  }
+
+  // An empty window is a warning: the alerts may be off or the sender changed.
+  {
+    const { ctx, logs } = makeCtx(fakeFastmail([]).fetch, { dataRoot });
+    assert.deepStrictEqual(await plugin.ingest(ctx), []);
+    assert(logs.some(l => /WARNING no alert emails from jobalerts-noreply@linkedin\.com since \d{4}-\d{2}-\d{2}/.test(l)));
+  }
+
   // A backlog bigger than one run is read oldest first across runs, over
   // more than one Email/query page.
   {

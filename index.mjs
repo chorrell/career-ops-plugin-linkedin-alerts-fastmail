@@ -138,7 +138,14 @@ export default {
       ctx.log(`linkedin-alerts-fastmail: ${unread.length} unread alerts in the window, reading the oldest ${GET_LIMIT}; the next run continues`);
     }
     if (batch.length === 0) {
-      ctx.log('linkedin-alerts-fastmail: 0 new alert email(s), 0 job(s)');
+      // Tell "nothing arrived" apart from "everything was already read": a bare
+      // "0 new" reads as alerts having stopped when an earlier run took them.
+      const since = after.slice(0, 10);
+      if (ids.length === 0) {
+        ctx.log(`linkedin-alerts-fastmail: WARNING no alert emails from ${sender} since ${since} — check the LinkedIn alerts are still on and still sent from this address`);
+      } else {
+        ctx.log(`linkedin-alerts-fastmail: 0 new alert email(s), 0 job(s); all ${ids.length} alert email(s) since ${since} were read by earlier runs`);
+      }
       return [];
     }
 

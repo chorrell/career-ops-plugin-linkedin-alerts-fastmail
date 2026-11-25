@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/chorrell/career-ops-plugin-linkedin-alerts-fastmail/compare/v0.4.0...v0.4.1) (2026-11-25)
+
+
+### Bug Fixes
+
+* say when every alert in the window was already read ([#13](https://github.com/chorrell/career-ops-plugin-linkedin-alerts-fastmail/issues/13)) ([bd4f88a](https://github.com/chorrell/career-ops-plugin-linkedin-alerts-fastmail/commit/bd4f88ad52043408ff06c0b89f4b33bcca0ccbb7))
+
 ## 0.4.0 (2026-11-08)
 
 
